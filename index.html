@@ -8,24 +8,32 @@
 </head>
 <body>
 
-<div id="auth">
+<div id="auth" class="container">
   <h2>Login / Register</h2>
   <input id="email" type="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
-  <button id="loginBtn">Login</button>
-  <button id="registerBtn">Register</button>
+  <div class="button-group">
+    <button id="loginBtn">Login</button>
+    <button id="registerBtn">Register</button>
+  </div>
+  <p class="hint">Use any email and password (min 6 characters) to register</p>
 </div>
 
-<div id="chat" hidden>
-  <h2>Secure Chat</h2>
-  <div id="messages"></div>
-
-  <input id="message" placeholder="Type a message..." />
-  <button id="sendBtn">Send</button>
-
-  <button id="logoutBtn">Logout</button>
+<div id="chat" class="container" hidden>
+  <div class="chat-header">
+    <h2>Secure Chat</h2>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </div>
+  
+  <div id="messages" class="messages-container"></div>
+  
+  <div class="message-input-container">
+    <input id="message" type="text" placeholder="Type a message..." />
+    <button id="sendBtn" class="send-btn">Send</button>
+  </div>
 </div>
 
+<script type="module" src="firebase.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>
