@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Secure Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="auth">
+  <h2>Login / Register</h2>
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <button id="registerBtn">Register</button>
+</div>
+
+<div id="chat" hidden>
+  <h2>Secure Chat</h2>
+
+  <div id="messages"></div>
+
+  <input id="phone" placeholder="Phone Number (optional)" />
+  <input id="message" placeholder="Type a message" />
+  <input type="file" id="image" />
+  <button id="sendBtn">Send</button>
+
+  <button id="logoutBtn">Logout</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
