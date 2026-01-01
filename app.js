@@ -1,70 +1,92 @@
+import { auth, db } from "./firebase.js";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const authDiv = document.getElementById("auth");
 const chatDiv = document.getElementById("chat");
-
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-
-const messageInput = document.getElementById("message");
-const phoneInput = document.getElementById("phone");
 const messagesDiv = document.getElementById("messages");
+const messageInput = document.getElementById("message");
 
 document.getElementById("loginBtn").onclick = login;
 document.getElementById("registerBtn").onclick = register;
 document.getElementById("sendBtn").onclick = sendMessage;
 document.getElementById("logoutBtn").onclick = logout;
 
-// Fake in-memory auth (replace with Firebase later)
-let currentUser = null;
+// AUTH STATE
+onAuthStateChanged(auth, user => {
+  if (user) {
+    authDiv.hidden = true;
+    chatDiv.hidden = false;
+    loadMessages();
+  } else {
+    authDiv.hidden = false;
+    chatDiv.hidden = true;
+  }
+});
 
+// LOGIN
 function login() {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-
-  if (!email || !password) {
-    alert("Email and password required");
-    return;
-  }
-
-  currentUser = email;
-  showChat();
+  signInWithEmailAndPassword(
+    auth,
+    email.value,
+    password.value
+  ).catch(err => alert(err.message));
 }
 
+// REGISTER
 function register() {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-
-  if (!email || !password) {
-    alert("Email and password required");
-    return;
-  }
-
-  currentUser = email;
-  showChat();
+  createUserWithEmailAndPassword(
+    auth,
+    email.value,
+    password.value
+  ).catch(err => alert(err.message));
 }
 
+// LOGOUT
 function logout() {
-  currentUser = null;
-  authDiv.hidden = false;
-  chatDiv.hidden = true;
-  messagesDiv.innerHTML = "";
+  signOut(auth);
 }
 
-function showChat() {
-  authDiv.hidden = true;
-  chatDiv.hidden = false;
-}
-
-function sendMessage() {
+// SEND MESSAGE
+async function sendMessage() {
   const text = messageInput.value.trim();
   if (!text) return;
 
-  const phone = phoneInput.value.trim();
+  await addDoc(collection(db, "messages"), {
+    user: auth.currentUser.email,
+    text,
+    time: serverTimestamp()
+  });
 
-  const div = document.createElement("div");
-  div.className = "message";
-  div.textContent = `${currentUser}${phone ? " (" + phone + ")" : ""}: ${text}`;
-
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
   messageInput.value = "";
+}
+
+// LOAD + LISTEN FOR REPLIES
+function loadMessages() {
+  const q = query(collection(db, "messages"), orderBy("time"));
+
+  onSnapshot(q, snapshot => {
+    messagesDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const msg = doc.data();
+      const div = document.createElement("div");
+      div.className = "message";
+      div.textContent = `${msg.user}: ${msg.text}`;
+      messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
 }
