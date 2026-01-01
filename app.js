@@ -15,78 +15,80 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const authDiv = document.getElementById("auth");
-const chatDiv = document.getElementById("chat");
-const messagesDiv = document.getElementById("messages");
-const messageInput = document.getElementById("message");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("App loaded");
 
-document.getElementById("loginBtn").onclick = login;
-document.getElementById("registerBtn").onclick = register;
-document.getElementById("sendBtn").onclick = sendMessage;
-document.getElementById("logoutBtn").onclick = logout;
+  const authDiv = document.getElementById("auth");
+  const chatDiv = document.getElementById("chat");
+  const messagesDiv = document.getElementById("messages");
+  const messageInput = document.getElementById("message");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
 
-// AUTH STATE
-onAuthStateChanged(auth, user => {
-  if (user) {
-    authDiv.hidden = true;
-    chatDiv.hidden = false;
-    loadMessages();
-  } else {
-    authDiv.hidden = false;
-    chatDiv.hidden = true;
+  document.getElementById("loginBtn").addEventListener("click", login);
+  document.getElementById("registerBtn").addEventListener("click", register);
+  document.getElementById("sendBtn").addEventListener("click", sendMessage);
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      authDiv.hidden = true;
+      chatDiv.hidden = false;
+      loadMessages();
+    } else {
+      authDiv.hidden = false;
+      chatDiv.hidden = true;
+    }
+  });
+
+  function login() {
+    console.log("Login clicked");
+    signInWithEmailAndPassword(
+      auth,
+      emailInput.value,
+      passwordInput.value
+    ).catch(err => alert(err.message));
+  }
+
+  function register() {
+    console.log("Register clicked");
+    createUserWithEmailAndPassword(
+      auth,
+      emailInput.value,
+      passwordInput.value
+    ).catch(err => alert(err.message));
+  }
+
+  function logout() {
+    console.log("Logout clicked");
+    signOut(auth);
+  }
+
+  async function sendMessage() {
+    console.log("Send clicked");
+    const text = messageInput.value.trim();
+    if (!text) return;
+
+    await addDoc(collection(db, "messages"), {
+      user: auth.currentUser.email,
+      text,
+      time: serverTimestamp()
+    });
+
+    messageInput.value = "";
+  }
+
+  function loadMessages() {
+    const q = query(collection(db, "messages"), orderBy("time"));
+    onSnapshot(q, snapshot => {
+      messagesDiv.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const div = document.createElement("div");
+        div.textContent = `${msg.user}: ${msg.text}`;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
   }
 });
-
-// LOGIN
-function login() {
-  signInWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  ).catch(err => alert(err.message));
-}
-
-// REGISTER
-function register() {
-  createUserWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  ).catch(err => alert(err.message));
-}
-
-// LOGOUT
-function logout() {
-  signOut(auth);
-}
-
-// SEND MESSAGE
-async function sendMessage() {
-  const text = messageInput.value.trim();
-  if (!text) return;
-
-  await addDoc(collection(db, "messages"), {
-    user: auth.currentUser.email,
-    text,
-    time: serverTimestamp()
-  });
-
-  messageInput.value = "";
-}
-
-// LOAD + LISTEN FOR REPLIES
-function loadMessages() {
-  const q = query(collection(db, "messages"), orderBy("time"));
-
-  onSnapshot(q, snapshot => {
-    messagesDiv.innerHTML = "";
-    snapshot.forEach(doc => {
-      const msg = doc.data();
-      const div = document.createElement("div");
-      div.className = "message";
-      div.textContent = `${msg.user}: ${msg.text}`;
-      messagesDiv.appendChild(div);
-    });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-}
