@@ -19,14 +19,16 @@ input, button {
 }
 
 #messages {
-  height: 200px;
+  height: 250px;
+  overflow-y: auto;
   border: 1px solid #ccc;
   margin-bottom: 10px;
-  overflow-y: auto;
-  padding: 6px;
+  padding: 8px;
 }
 
 .message {
+  margin-bottom: 6px;
   padding: 6px;
-  border-bottom: 1px solid #eee;
+  background: #eee;
+  border-radius: 4px;
 }
